@@ -64,6 +64,24 @@
       flex: 1;
       height: 100%;
     }
+
+    .monaco-editor .view-lines {
+      transition: all 0.1s ease-in-out;
+    }
+
+    .monaco-editor .cursors-layer .cursor {
+      transition: all 0.05s ease-in-out;
+      border-left: 2px solid #88c0ff !important;
+    }
+
+    .monaco-editor .view-line {
+      transition: color 0.1s ease-in-out;
+    }
+
+    .monaco-editor {
+      font-smooth: always;
+      -webkit-font-smoothing: antialiased;
+    }
   </style>
 </head>
 <body>
@@ -81,10 +99,12 @@
     <div id="editor"></div>
     <div id="barrier"></div>
   </div>
+
   <script>
     require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' } });
     require(['vs/editor/editor.main'], function () {
       monaco.languages.register({ id: 'lua' });
+
       monaco.languages.setMonarchTokensProvider('lua', {
         tokenizer: {
           root: [
@@ -95,75 +115,63 @@
           ]
         }
       });
+
       monaco.languages.registerCompletionItemProvider('lua', {
         provideCompletionItems: () => {
           return {
             suggestions: [
-              {
-                label: 'print',
-                kind: monaco.languages.CompletionItemKind.Function,
-                insertText: 'print("${1:text}")',
-                insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet
-              },
-              {
-                label: 'game',
-                kind: monaco.languages.CompletionItemKind.Variable,
-                insertText: 'game'
-              },
-              {
-                label: 'workspace',
-                kind: monaco.languages.CompletionItemKind.Variable,
-                insertText: 'workspace'
-              },
-              {
-                label: 'Instance.new',
-                kind: monaco.languages.CompletionItemKind.Function,
-                insertText: 'Instance.new("${1:Part}")',
-                insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet
-              },
-              {
-                label: 'Vector3.new',
-                kind: monaco.languages.CompletionItemKind.Function,
-                insertText: 'Vector3.new(${1:0}, ${2:0}, ${3:0})',
-                insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet
-              },
-              {
-                label: 'CFrame.new',
-                kind: monaco.languages.CompletionItemKind.Function,
-                insertText: 'CFrame.new(${1:0}, ${2:0}, ${3:0})',
-                insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet
-              },
-              {
-                label: 'script.Parent',
-                kind: monaco.languages.CompletionItemKind.Variable,
-                insertText: 'script.Parent'
-              },
-              {
-                label: 'game:GetService',
-                kind: monaco.languages.CompletionItemKind.Function,
-                insertText: 'game:GetService("${1:Players}")',
-                insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet
-              },
-              {
-                label: 'wait',
-                kind: monaco.languages.CompletionItemKind.Function,
-                insertText: 'wait(${1:1})',
-                insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet
-              }
+              { label: 'print', kind: monaco.languages.CompletionItemKind.Function, insertText: 'print("${1:text}")', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet },
+              { label: 'game', kind: monaco.languages.CompletionItemKind.Variable, insertText: 'game' },
+              { label: 'workspace', kind: monaco.languages.CompletionItemKind.Variable, insertText: 'workspace' },
+              { label: 'Instance.new', kind: monaco.languages.CompletionItemKind.Function, insertText: 'Instance.new("${1:Part}")', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet },
+              { label: 'Vector3.new', kind: monaco.languages.CompletionItemKind.Function, insertText: 'Vector3.new(${1:0}, ${2:0}, ${3:0})', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet },
+              { label: 'CFrame.new', kind: monaco.languages.CompletionItemKind.Function, insertText: 'CFrame.new(${1:0}, ${2:0}, ${3:0})', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet },
+              { label: 'script.Parent', kind: monaco.languages.CompletionItemKind.Variable, insertText: 'script.Parent' },
+              { label: 'game:GetService', kind: monaco.languages.CompletionItemKind.Function, insertText: 'game:GetService("${1:Players}")', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet },
+              { label: 'wait', kind: monaco.languages.CompletionItemKind.Function, insertText: 'wait(${1:1})', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet }
             ]
           };
         }
       });
+
+      monaco.editor.defineTheme('skyfall-dark', {
+        base: 'vs-dark',
+        inherit: true,
+        rules: [
+          { token: 'keyword', foreground: '88C0FF' },
+          { token: 'number', foreground: 'B48EAD' },
+          { token: 'string', foreground: 'A3BE8C' },
+          { token: 'identifier', foreground: 'E5E9F0' }
+        ],
+        colors: {
+          'editor.background': '#0a0a0f',
+          'editor.foreground': '#ECEFF4',
+          'editor.lineHighlightBackground': '#1a1a1a',
+          'editorCursor.foreground': '#88C0FF',
+          'editorLineNumber.foreground': '#4C566A',
+          'editor.selectionBackground': '#434C5ECC',
+          'editor.inactiveSelectionBackground': '#3B4252AA'
+        }
+      });
+
+      monaco.editor.setTheme('skyfall-dark');
+
       monaco.editor.create(document.getElementById('editor'), {
         value: 'print("Have fun using Skyfall")',
         language: 'lua',
-        theme: 'vs-dark',
-        automaticLayout: true,
-        fontSize: 14,
+        theme: 'skyfall-dark',
+        fontSize: 15,
+        fontLigatures: true,
         smoothScrolling: true,
-        minimap: { enabled: false }
+        cursorSmoothCaretAnimation: true,
+        cursorBlinking: 'phase',
+        automaticLayout: true,
+        minimap: { enabled: false },
+        renderLineHighlight: 'all',
+        renderWhitespace: 'none',
+        scrollBeyondLastLine: false
       });
     });
   </script>
 </body>
-  </html>
+</html>

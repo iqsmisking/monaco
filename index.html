@@ -81,17 +81,89 @@
     <div id="editor"></div>
     <div id="barrier"></div>
   </div>
-
   <script>
     require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' } });
     require(['vs/editor/editor.main'], function () {
+      monaco.languages.register({ id: 'lua' });
+      monaco.languages.setMonarchTokensProvider('lua', {
+        tokenizer: {
+          root: [
+            [/\b(function|end|if|then|else|elseif|for|while|do|local|return|break|in|repeat|until|and|or|not)\b/, "keyword"],
+            [/[a-zA-Z_]\w*/, "identifier"],
+            [/\d+/, "number"],
+            [/".*?"/, "string"]
+          ]
+        }
+      });
+      monaco.languages.registerCompletionItemProvider('lua', {
+        provideCompletionItems: () => {
+          return {
+            suggestions: [
+              {
+                label: 'print',
+                kind: monaco.languages.CompletionItemKind.Function,
+                insertText: 'print("${1:text}")',
+                insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet
+              },
+              {
+                label: 'game',
+                kind: monaco.languages.CompletionItemKind.Variable,
+                insertText: 'game'
+              },
+              {
+                label: 'workspace',
+                kind: monaco.languages.CompletionItemKind.Variable,
+                insertText: 'workspace'
+              },
+              {
+                label: 'Instance.new',
+                kind: monaco.languages.CompletionItemKind.Function,
+                insertText: 'Instance.new("${1:Part}")',
+                insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet
+              },
+              {
+                label: 'Vector3.new',
+                kind: monaco.languages.CompletionItemKind.Function,
+                insertText: 'Vector3.new(${1:0}, ${2:0}, ${3:0})',
+                insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet
+              },
+              {
+                label: 'CFrame.new',
+                kind: monaco.languages.CompletionItemKind.Function,
+                insertText: 'CFrame.new(${1:0}, ${2:0}, ${3:0})',
+                insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet
+              },
+              {
+                label: 'script.Parent',
+                kind: monaco.languages.CompletionItemKind.Variable,
+                insertText: 'script.Parent'
+              },
+              {
+                label: 'game:GetService',
+                kind: monaco.languages.CompletionItemKind.Function,
+                insertText: 'game:GetService("${1:Players}")',
+                insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet
+              },
+              {
+                label: 'wait',
+                kind: monaco.languages.CompletionItemKind.Function,
+                insertText: 'wait(${1:1})',
+                insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet
+              }
+            ]
+          };
+        }
+      });
       monaco.editor.create(document.getElementById('editor'), {
         value: 'print("Have fun using Skyfall")',
-        language: 'python',
+        language: 'lua',
         theme: 'vs-dark',
-        automaticLayout: true
+        automaticLayout: true,
+        fontSize: 14,
+        smoothScrolling: true,
+        minimap: { enabled: false }
       });
     });
   </script>
 </body>
-</html>
+  </html>

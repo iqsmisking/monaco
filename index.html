@@ -26,6 +26,15 @@
       transition: background 0.2s ease;
     }
     #sidebar a:hover { background: #3b3b4c; }
+    #credits {
+      margin-top: auto; text-align: center; font-size: 12px; color: #aaa;
+      padding-top: 10px; border-top: 1px solid #333;
+    }
+    #credits div.name {
+      font-weight: bold;
+      color: #ccc;
+      margin-top: 4px;
+    }
     #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
     #tabs {
       display: flex; background-color: #1f1f2e;
@@ -87,6 +96,11 @@
     <a href="https://discord.gg/AQ6YFUWyCt" target="_blank">Discord</a>
     <a href="https://www.youtube.com/@SkyFallRBX" target="_blank">YouTube</a>
     <a href="https://skyfall.cfd" target="_blank">Website</a>
+    <div id="credits">
+      <div>Credits</div>
+      <div class="name">タじモメッし</div>
+      <div class="name">sargaborso | †</div>
+    </div>
   </div>
   <div id="main">
     <div id="tabs">
@@ -105,21 +119,16 @@
       </div>
     </div>
   </div>
-
   <div id="iframeContainer" style="display:none;">
     <iframe src="https://scriptblox.com"></iframe>
   </div>
-
   <script>
     require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' } });
-
     let editors = {};
     let tabCount = 1;
     let initialCode = 'print("Have fun using Skyfall")';
-
     require(['vs/editor/editor.main'], function () {
       monaco.languages.register({ id: 'lua' });
-
       monaco.languages.setMonarchTokensProvider('lua', {
         tokenizer: {
           root: [
@@ -130,7 +139,6 @@
           ]
         }
       });
-
       monaco.editor.defineTheme('skyfall-cool', {
         base: 'vs-dark',
         inherit: true,
@@ -151,9 +159,7 @@
           'editor.selectionHighlightBackground': '#ffffff10'
         }
       });
-
       monaco.editor.setTheme('skyfall-cool');
-
       editors['tab1'] = monaco.editor.create(document.getElementById('tab1'), {
         value: initialCode,
         language: 'lua',
@@ -167,24 +173,20 @@
         cursorBlinking: 'phase'
       });
     });
-
     function addTab() {
       tabCount++;
       const tabId = `tab${tabCount}`;
       const tabLabel = `Tab ${tabCount}`;
-
       const tab = document.createElement('div');
       tab.className = 'tab';
       tab.dataset.id = tabId;
       tab.innerHTML = `${tabLabel}<span class="close" onclick="closeTab(event, '${tabId}')">&times;</span>`;
       tab.onclick = () => switchTab(tabId);
       document.getElementById('tabs').insertBefore(tab, document.querySelector('#tabs button'));
-
       const editorDiv = document.createElement('div');
       editorDiv.id = tabId;
       editorDiv.className = 'editor-instance';
       document.getElementById('editor-container').appendChild(editorDiv);
-
       require(['vs/editor/editor.main'], function () {
         editors[tabId] = monaco.editor.create(editorDiv, {
           value: initialCode,
@@ -199,17 +201,14 @@
           cursorBlinking: 'phase'
         });
       });
-
       switchTab(tabId);
     }
-
     function switchTab(tabId) {
       document.querySelectorAll('.editor-instance').forEach(e => e.classList.remove('active'));
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       document.getElementById(tabId).classList.add('active');
       document.querySelector(`.tab[data-id="${tabId}"]`).classList.add('active');
     }
-
     function closeTab(event, tabId) {
       event.stopPropagation();
       if (editors[tabId]) {
@@ -221,7 +220,6 @@
       const nextTab = document.querySelector('.tab');
       if (nextTab) switchTab(nextTab.dataset.id);
     }
-
     function saveToFile() {
       const activeId = document.querySelector('.editor-instance.active').id;
       const content = editors[activeId].getValue();
@@ -233,12 +231,10 @@
       a.click();
       URL.revokeObjectURL(url);
     }
-
     function clearEditor() {
       const activeId = document.querySelector('.editor-instance.active').id;
       editors[activeId].setValue('');
     }
-
     document.getElementById('fileInput').addEventListener('change', function (event) {
       const file = event.target.files[0];
       if (file) {
@@ -250,16 +246,13 @@
         reader.readAsText(file);
       }
     });
-
     function openScriptBlox() {
       document.getElementById('iframeContainer').style.display = 'block';
     }
-
     window.addEventListener('beforeunload', function (e) {
       e.preventDefault();
       e.returnValue = '';
     });
-
     document.addEventListener('keydown', function (e) {
       if (e.ctrlKey && e.key === 's') {
         e.preventDefault();

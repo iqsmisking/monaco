@@ -69,6 +69,7 @@
       color: #ccc;
       display: flex;
       align-items: center;
+      user-select: none;
     }
 
     .tab.active {
@@ -104,6 +105,11 @@
     .editor-instance.active {
       display: block;
     }
+
+    .tab[contenteditable="true"]:focus {
+      outline: none;
+      background: #333;
+    }
   </style>
 </head>
 <body>
@@ -116,7 +122,7 @@
   </div>
   <div id="main">
     <div id="tabs">
-      <div class="tab active" data-id="tab1">Main Tab<span class="close" onclick="closeTab(event, 'tab1')">&times;</span></div>
+      <div class="tab active" data-id="tab1" ondblclick="editTabName(this)">Main Tab<span class="close" onclick="closeTab(event, 'tab1')">&times;</span></div>
       <button onclick="addTab()">+</button>
     </div>
     <div id="editor-container">
@@ -126,8 +132,10 @@
 
   <script>
     require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' } });
+
     let editors = {};
     let tabCount = 1;
+    let initialCode = 'print("Have fun using Skyfall")';
 
     require(['vs/editor/editor.main'], function () {
       monaco.languages.register({ id: 'lua' });
@@ -143,32 +151,33 @@
         }
       });
 
-      monaco.editor.defineTheme('skyfall-dark', {
+      monaco.editor.defineTheme('skyfall-cool', {
         base: 'vs-dark',
         inherit: true,
         rules: [
-          { token: 'keyword', foreground: '88C0FF' },
-          { token: 'number', foreground: 'B48EAD' },
-          { token: 'string', foreground: 'A3BE8C' },
-          { token: 'identifier', foreground: 'E5E9F0' }
+          { token: 'keyword', foreground: '82AAFF' },
+          { token: 'number', foreground: 'D67AD2' },
+          { token: 'string', foreground: 'A5E075' },
+          { token: 'identifier', foreground: 'E0E0E0' }
         ],
         colors: {
-          'editor.background': '#0a0a0f',
-          'editor.foreground': '#ECEFF4',
-          'editor.lineHighlightBackground': '#1a1a1a',
-          'editorCursor.foreground': '#88C0FF',
-          'editorLineNumber.foreground': '#4C566A',
-          'editor.selectionBackground': '#434C5ECC',
-          'editor.inactiveSelectionBackground': '#3B4252AA'
+          'editor.background': '#0f111a',
+          'editor.foreground': '#dcdcdc',
+          'editorLineNumber.foreground': '#5c6370',
+          'editor.selectionBackground': '#3E4451',
+          'editor.lineHighlightBackground': '#21252b',
+          'editorCursor.foreground': '#FFCC00',
+          'editorIndentGuide.background': '#3b4048',
+          'editor.selectionHighlightBackground': '#ffffff10'
         }
       });
 
-      monaco.editor.setTheme('skyfall-dark');
+      monaco.editor.setTheme('skyfall-cool');
 
       editors['tab1'] = monaco.editor.create(document.getElementById('tab1'), {
-        value: 'print("Have fun using Skyfall")',
+        value: initialCode,
         language: 'lua',
-        theme: 'skyfall-dark',
+        theme: 'skyfall-cool',
         fontSize: 15,
         fontLigatures: true,
         automaticLayout: true,
@@ -182,11 +191,12 @@
     function addTab() {
       tabCount++;
       const tabId = `tab${tabCount}`;
-      const tabLabel = `Tab ${tabCount}`;
+      const tabLabel = `Main Tab`;
 
       const tab = document.createElement('div');
       tab.className = 'tab';
       tab.dataset.id = tabId;
+      tab.ondblclick = () => editTabName(tab);
       tab.innerHTML = `${tabLabel}<span class="close" onclick="closeTab(event, '${tabId}')">&times;</span>`;
       tab.onclick = () => switchTab(tabId);
       document.getElementById('tabs').insertBefore(tab, document.querySelector('#tabs button'));
@@ -198,9 +208,9 @@
 
       require(['vs/editor/editor.main'], function () {
         editors[tabId] = monaco.editor.create(editorDiv, {
-          value: '-- New Lua Script',
+          value: initialCode,
           language: 'lua',
-          theme: 'skyfall-dark',
+          theme: 'skyfall-cool',
           fontSize: 15,
           fontLigatures: true,
           automaticLayout: true,
@@ -233,6 +243,21 @@
       if (nextTab) {
         switchTab(nextTab.dataset.id);
       }
+    }
+
+    function editTabName(tab) {
+      const span = tab.querySelector('.close');
+      span.remove();
+      tab.contentEditable = true;
+      tab.focus();
+
+      const handleBlur = () => {
+        tab.contentEditable = false;
+        tab.appendChild(span);
+        tab.removeEventListener('blur', handleBlur);
+      };
+
+      tab.addEventListener('blur', handleBlur);
     }
   </script>
 </body>

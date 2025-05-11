@@ -5,111 +5,65 @@
   <title>Skyfall Editor</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
+    * { box-sizing: border-box; }
     body {
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0;
       background: linear-gradient(to bottom right, #0f0f1a, #1a1a2e);
       font-family: 'Consolas', monospace;
-      color: white;
-      display: flex;
-      height: 100vh;
-      overflow: hidden;
+      color: white; display: flex;
+      height: 100vh; overflow: hidden;
     }
-
     #sidebar {
-      width: 220px;
-      background-color: #111;
-      border-right: 1px solid #333;
-      padding: 15px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
+      width: 220px; background-color: #111;
+      border-right: 1px solid #333; padding: 15px;
+      display: flex; flex-direction: column; gap: 12px;
       box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
     }
-
     #sidebar a {
-      color: #e0e0e0;
-      text-decoration: none;
-      background: #2b2b3c;
-      padding: 10px;
-      border-radius: 6px;
-      text-align: center;
+      color: #e0e0e0; text-decoration: none;
+      background: #2b2b3c; padding: 10px;
+      border-radius: 6px; text-align: center;
       transition: background 0.2s ease;
     }
-
-    #sidebar a:hover {
-      background: #3b3b4c;
-    }
-
-    #main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
+    #sidebar a:hover { background: #3b3b4c; }
+    #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
     #tabs {
-      display: flex;
-      background-color: #1f1f2e;
-      padding: 6px 10px;
-      border-bottom: 1px solid #333;
+      display: flex; background-color: #1f1f2e;
+      padding: 6px 10px; border-bottom: 1px solid #333;
       align-items: center;
     }
-
     .tab {
-      background: #2a2a3f;
-      padding: 6px 12px;
-      margin-right: 5px;
-      border-radius: 6px 6px 0 0;
-      cursor: pointer;
-      color: #ccc;
-      display: flex;
-      align-items: center;
-      user-select: none;
+      background: #2a2a3f; padding: 6px 12px;
+      margin-right: 5px; border-radius: 6px 6px 0 0;
+      cursor: pointer; color: #ccc; display: flex;
+      align-items: center; user-select: none;
     }
-
     .tab.active {
-      background: #10101a;
-      color: #88c0ff;
+      background: #10101a; color: #88c0ff;
       border-bottom: 2px solid #88c0ff;
     }
-
     .tab .close {
-      margin-left: 8px;
-      color: #888;
-      cursor: pointer;
+      margin-left: 8px; color: #888; cursor: pointer;
     }
-
-    .tab .close:hover {
-      color: #ff5555;
-    }
-
+    .tab .close:hover { color: #ff5555; }
     #editor-container {
-      flex: 1;
-      position: relative;
+      flex: 1; position: relative;
     }
-
     .editor-instance {
-      width: 100%;
-      height: 100%;
-      position: absolute;
-      top: 0;
-      left: 0;
-      display: none;
+      width: 100%; height: 100%;
+      position: absolute; top: 0; left: 0; display: none;
     }
-
-    .editor-instance.active {
-      display: block;
+    .editor-instance.active { display: block; }
+    #controls {
+      background: #1a1a2e; padding: 10px; border-top: 1px solid #333;
+      display: flex; justify-content: space-between;
     }
-
-    .tab[contenteditable="true"]:focus {
-      outline: none;
-      background: #333;
+    button {
+      background: #2b2b3c; color: white; border: none;
+      padding: 6px 12px; border-radius: 6px;
+      cursor: pointer; font-weight: bold;
     }
+    button:hover { background: #3b3b4c; }
   </style>
 </head>
 <body>
@@ -122,11 +76,18 @@
   </div>
   <div id="main">
     <div id="tabs">
-      <div class="tab active" data-id="tab1" ondblclick="editTabName(this)">Main Tab<span class="close" onclick="closeTab(event, 'tab1')">&times;</span></div>
+      <div class="tab active" data-id="tab1">Tab 1<span class="close" onclick="closeTab(event, 'tab1')">&times;</span></div>
       <button onclick="addTab()">+</button>
     </div>
     <div id="editor-container">
       <div id="tab1" class="editor-instance active"></div>
+    </div>
+    <div id="controls">
+      <div>
+        <button onclick="saveToFile()">Save</button>
+        <input type="file" id="fileInput" accept=".lua,.txt" style="display:none" />
+        <button onclick="document.getElementById('fileInput').click()">Load</button>
+      </div>
     </div>
   </div>
 
@@ -143,7 +104,7 @@
       monaco.languages.setMonarchTokensProvider('lua', {
         tokenizer: {
           root: [
-            [/\b(function|end|if|then|else|elseif|for|while|do|local|return|break|in|repeat|until|and|or|not)\b/, "keyword"],
+            [/(function|end|if|then|else|elseif|for|while|do|local|return|break|in|repeat|until|and|or|not)/, "keyword"],
             [/[a-zA-Z_]\w*/, "identifier"],
             [/\d+/, "number"],
             [/".*?"/, "string"]
@@ -191,12 +152,11 @@
     function addTab() {
       tabCount++;
       const tabId = `tab${tabCount}`;
-      const tabLabel = `Main Tab`;
+      const tabLabel = `Tab ${tabCount}`;
 
       const tab = document.createElement('div');
       tab.className = 'tab';
       tab.dataset.id = tabId;
-      tab.ondblclick = () => editTabName(tab);
       tab.innerHTML = `${tabLabel}<span class="close" onclick="closeTab(event, '${tabId}')">&times;</span>`;
       tab.onclick = () => switchTab(tabId);
       document.getElementById('tabs').insertBefore(tab, document.querySelector('#tabs button'));
@@ -240,25 +200,32 @@
       document.getElementById(tabId).remove();
       document.querySelector(`.tab[data-id="${tabId}"]`).remove();
       const nextTab = document.querySelector('.tab');
-      if (nextTab) {
-        switchTab(nextTab.dataset.id);
+      if (nextTab) switchTab(nextTab.dataset.id);
+    }
+
+    function saveToFile() {
+      const activeId = document.querySelector('.editor-instance.active').id;
+      const content = editors[activeId].getValue();
+      const blob = new Blob([content], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'script.lua';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    document.getElementById('fileInput').addEventListener('change', function (event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const activeId = document.querySelector('.editor-instance.active').id;
+          editors[activeId].setValue(e.target.result);
+        };
+        reader.readAsText(file);
       }
-    }
-
-    function editTabName(tab) {
-      const span = tab.querySelector('.close');
-      span.remove();
-      tab.contentEditable = true;
-      tab.focus();
-
-      const handleBlur = () => {
-        tab.contentEditable = false;
-        tab.appendChild(span);
-        tab.removeEventListener('blur', handleBlur);
-      };
-
-      tab.addEventListener('blur', handleBlur);
-    }
+    });
   </script>
 </body>
 </html>

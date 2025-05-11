@@ -64,12 +64,26 @@
       cursor: pointer; font-weight: bold;
     }
     button:hover { background: #3b3b4c; }
+    #iframeContainer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      z-index: 9999;
+    }
+    #iframeContainer iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
   </style>
 </head>
 <body>
   <div id="sidebar">
     <a href="#">Home</a>
-    <a href="#" onclick="alert('ScriptBlox content here');">ScriptHub</a>
+    <a href="#" onclick="openScriptBlox()">ScriptHub</a>
     <a href="https://discord.gg/AQ6YFUWyCt" target="_blank">Discord</a>
     <a href="https://www.youtube.com/@SkyFallRBX" target="_blank">YouTube</a>
     <a href="https://skyfall.cfd" target="_blank">Website</a>
@@ -87,8 +101,13 @@
         <button onclick="saveToFile()">Save</button>
         <input type="file" id="fileInput" accept=".lua,.txt" style="display:none" />
         <button onclick="document.getElementById('fileInput').click()">Load</button>
+        <button onclick="clearEditor()">Clear</button>
       </div>
     </div>
+  </div>
+
+  <div id="iframeContainer" style="display:none;">
+    <iframe src="https://scriptblox.com"></iframe>
   </div>
 
   <script>
@@ -104,7 +123,7 @@
       monaco.languages.setMonarchTokensProvider('lua', {
         tokenizer: {
           root: [
-            [/(function|end|if|then|else|elseif|for|while|do|local|return|break|in|repeat|until|and|or|not)/, "keyword"],
+            [/\b(function|end|if|then|else|elseif|for|while|do|local|return|break|in|repeat|until|and|or|not)\b/, "keyword"],
             [/[a-zA-Z_]\w*/, "identifier"],
             [/\d+/, "number"],
             [/".*?"/, "string"]
@@ -215,6 +234,11 @@
       URL.revokeObjectURL(url);
     }
 
+    function clearEditor() {
+      const activeId = document.querySelector('.editor-instance.active').id;
+      editors[activeId].setValue('');
+    }
+
     document.getElementById('fileInput').addEventListener('change', function (event) {
       const file = event.target.files[0];
       if (file) {
@@ -224,6 +248,27 @@
           editors[activeId].setValue(e.target.result);
         };
         reader.readAsText(file);
+      }
+    });
+
+    function openScriptBlox() {
+      document.getElementById('iframeContainer').style.display = 'block';
+    }
+
+    window.addEventListener('beforeunload', function (e) {
+      e.preventDefault();
+      e.returnValue = '';
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.ctrlKey && e.key === 's') {
+        e.preventDefault();
+        saveToFile();
+      }
+      if (e.ctrlKey && e.key === 'w') {
+        e.preventDefault();
+        const activeId = document.querySelector('.tab.active').dataset.id;
+        closeTab(new Event('click'), activeId);
       }
     });
   </script>
